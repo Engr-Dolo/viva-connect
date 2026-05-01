@@ -215,13 +215,13 @@ const HomePage = () => {
             
           </div>
 
-          <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-slate-500 text-center md:text-left">
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-col items-center justify-center gap-2 text-center">
+            <p className="text-xs text-slate-500">
               &copy; {new Date().getFullYear()} Ramakrishna Mission VIVA Connect. All rights reserved.
             </p>
-            <div className="flex gap-4">
-              <Link to="/login" className="text-xs text-slate-500 hover:text-white transition-colors">Admin Portal</Link>
-            </div>
+            <p className="text-xs text-slate-600">
+              Engineered and maintained by <span className="font-medium text-slate-400">Engr. Philip J. Dolo</span>
+            </p>
           </div>
         </div>
       </footer>
