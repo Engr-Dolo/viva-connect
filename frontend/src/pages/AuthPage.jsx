@@ -57,7 +57,7 @@ const AuthPage = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-viva-mist px-4 py-8">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-md border border-slate-200 bg-white shadow-soft lg:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-soft lg:grid-cols-[0.9fr_1.1fr]">
         <div className="bg-viva-ink p-6 text-white sm:p-8">
           <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition">
             <ArrowLeft size={16} />

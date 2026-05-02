@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         aria-hidden="true"
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:z-30 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:z-30 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:w-24 lg:translate-x-0'
         }`}
       >

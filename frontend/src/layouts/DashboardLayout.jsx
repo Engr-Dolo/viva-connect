@@ -14,7 +14,7 @@ const viewTitles = {
 };
 
 const DashboardLayout = ({ children }) => {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const { logout, user } = useAuth();
   const location = useLocation();
 
