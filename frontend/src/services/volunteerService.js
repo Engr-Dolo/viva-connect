@@ -11,6 +11,11 @@ export const getVolunteers = async ({ page = 1, limit = 10, search = '' } = {}) 
   return response.data;
 };
 
+export const getEligibleStaff = async () => {
+  const response = await apiClient('/volunteers/eligible-staff');
+  return response.data.staff;
+};
+
 export const createVolunteer = async (payload) => {
   const response = await apiClient('/volunteers', {
     method: 'POST',

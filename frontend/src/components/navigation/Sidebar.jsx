@@ -1,16 +1,20 @@
-import { CalendarDays, HeartHandshake, LayoutDashboard, UsersRound, X, Home } from 'lucide-react';
+import { CalendarDays, HeartHandshake, LayoutDashboard, UsersRound, X, Home, ShieldCheck } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-const navItems = [
-  { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Volunteers', path: '/dashboard/volunteers', icon: UsersRound },
-  { label: 'Events', path: '/dashboard/events', icon: CalendarDays },
-  { label: 'Impact', path: '/dashboard/impact', icon: HeartHandshake },
-];
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const { user } = useAuth();
+  
+  const navItems = [
+    { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Volunteers', path: '/dashboard/volunteers', icon: UsersRound },
+    { label: 'Events', path: '/dashboard/events', icon: CalendarDays },
+    { label: 'Impact', path: '/dashboard/impact', icon: HeartHandshake },
+    ...(user?.role === 'admin' ? [{ label: 'Team', path: '/dashboard/team', icon: ShieldCheck }] : []),
+  ];
+
   return (
     <>
       <div

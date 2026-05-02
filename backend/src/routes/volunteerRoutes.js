@@ -5,6 +5,7 @@ import {
   getVolunteerHandler,
   getVolunteersHandler,
   updateVolunteerHandler,
+  getEligibleStaffHandler,
 } from '../controllers/volunteerController.js';
 import { authorizeRoles, verifyToken } from '../middleware/authMiddleware.js';
 import { validateQuery, validateRequest } from '../middleware/validateRequest.js';
@@ -14,6 +15,8 @@ import { createVolunteerSchema, updateVolunteerSchema } from '../validators/volu
 const router = Router();
 
 router.use(verifyToken);
+
+router.get('/eligible-staff', getEligibleStaffHandler);
 
 router
   .route('/')

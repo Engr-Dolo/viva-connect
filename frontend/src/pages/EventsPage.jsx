@@ -5,7 +5,7 @@ import LoadingBlock from '../components/common/LoadingBlock.jsx';
 import EventModal from '../components/events/EventModal.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { createEvent, deleteEvent, getEvents, updateEvent } from '../services/eventService.js';
-import { getVolunteers } from '../services/volunteerService.js';
+import { getEligibleStaff } from '../services/volunteerService.js';
 import { getEventReport } from '../services/aiService.js';
 import { exportToCSV } from '../utils/csvExport.js';
 import usePageTitle from '../hooks/usePageTitle.js';
@@ -22,7 +22,7 @@ const formatEventDate = (value) => {
 const EventsPage = ({ user }) => {
   usePageTitle('Events');
   const [events, setEvents] = useState([]);
-  const [volunteers, setVolunteers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [search, setSearch] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
@@ -66,10 +66,10 @@ const EventsPage = ({ user }) => {
     }
   }, [activeSearch, pagination.limit]);
 
-  const loadVolunteerOptions = useCallback(async () => {
+  const loadStaffOptions = useCallback(async () => {
     try {
-      const result = await getVolunteers({ page: 1, limit: 50 });
-      setVolunteers(result.volunteers);
+      const result = await getEligibleStaff();
+      setStaff(result);
     } catch (loadError) {
       setError(loadError.message);
     }
@@ -77,8 +77,8 @@ const EventsPage = ({ user }) => {
 
   useEffect(() => {
     loadEvents(1);
-    loadVolunteerOptions();
-  }, [loadEvents, loadVolunteerOptions]);
+    loadStaffOptions();
+  }, [loadEvents, loadStaffOptions]);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -383,7 +383,7 @@ const EventsPage = ({ user }) => {
         isSaving={isSaving}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSave}
-        volunteers={volunteers}
+        staff={staff}
       />
       <ConfirmDialog
         title="Delete event"

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { Volunteer } from '../models/Volunteer.js';
+import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
 import { logVolunteerCreated } from './googleSheetsService.js';
 
@@ -7,14 +8,35 @@ const sanitizeVolunteer = (volunteer) => ({
   id: volunteer._id.toString(),
   name: volunteer.name,
   email: volunteer.email,
-  phone: volunteer.phone,
-  skills: volunteer.skills,
-  availability: volunteer.availability,
+  phone: volunteer.phone || '',
+  role: 'volunteer',
+  skills: volunteer.skills || [],
+  availability: volunteer.availability || '',
   assignedEvents: volunteer.assignedEvents,
   totalSevaHours: volunteer.totalSevaHours,
   createdAt: volunteer.createdAt,
   updatedAt: volunteer.updatedAt,
 });
+
+export const getEligibleStaff = async () => {
+  const [volunteers, coordinators] = await Promise.all([
+    Volunteer.find({}),
+    User.find({ role: 'coordinator', status: 'active' }),
+  ]);
+
+  const mappedVolunteers = volunteers.map(sanitizeVolunteer);
+  const mappedCoordinators = coordinators.map(u => ({
+    id: u._id.toString(),
+    name: u.name,
+    email: u.email,
+    role: 'coordinator',
+    isStaff: true,
+  }));
+
+  return {
+    staff: [...mappedVolunteers, ...mappedCoordinators]
+  };
+};
 
 const ensureValidObjectId = (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {

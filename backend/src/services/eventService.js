@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Event } from '../models/Event.js';
 import { Volunteer } from '../models/Volunteer.js';
+import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
 import { logEventCreated } from './googleSheetsService.js';
 
@@ -25,31 +26,41 @@ const sanitizeEvent = (event) => ({
   date: event.date,
   location: event.location,
   peopleServed: event.peopleServed,
-  volunteers: (event.volunteers || []).map((volunteer) => {
-    if (volunteer && typeof volunteer === 'object' && volunteer.name) {
-      return sanitizeVolunteerSummary(volunteer);
+  mediaUrl: event.mediaUrl || '',
+  volunteers: (event.volunteers || []).map((v) => {
+    if (v && typeof v === 'object' && v.name) {
+      return sanitizeVolunteerSummary(v);
     }
-
-    return volunteer.toString();
+    return v.toString();
   }),
   createdBy: event.createdBy,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
 });
 
-const validateVolunteerIds = async (volunteerIds = []) => {
-  const ids = uniqueIds(volunteerIds);
+const validatePersonnelIds = async (personnelIds = []) => {
+  const ids = uniqueIds(personnelIds);
+  ids.forEach((id) => ensureValidObjectId(id, 'personnel id'));
 
-  ids.forEach((id) => ensureValidObjectId(id, 'volunteer id'));
+  if (ids.length === 0) return [];
 
-  if (ids.length === 0) {
-    return [];
-  }
+  const [volunteerCount, userCount] = await Promise.all([
+    Volunteer.countDocuments({ _id: { $in: ids } }),
+    User.countDocuments({ _id: { $in: ids }, role: 'coordinator' }),
+  ]);
 
-  const count = await Volunteer.countDocuments({ _id: { $in: ids } });
-
-  if (count !== ids.length) {
-    throw new AppError('One or more assigned volunteers were not found', 400);
+  if (volunteerCount + userCount < ids.length) {
+    // Some IDs might be duplicates across collections (unlikely but possible)
+    // or simply not found.
+    // For now, we trust the combined count or do a more thorough check.
+    // Let's do a more thorough check to be safe.
+    const foundVolunteers = await Volunteer.find({ _id: { $in: ids } }).select('_id');
+    const foundUsers = await User.find({ _id: { $in: ids }, role: 'coordinator' }).select('_id');
+    const foundIds = new Set([...foundVolunteers, ...foundUsers].map(doc => doc._id.toString()));
+    
+    if (foundIds.size !== ids.length) {
+      throw new AppError('One or more assigned staff members were not found', 400);
+    }
   }
 
   return ids;
@@ -58,8 +69,16 @@ const validateVolunteerIds = async (volunteerIds = []) => {
 const syncVolunteerAssignments = async (eventId, previousIds = [], nextIds = []) => {
   const previous = uniqueIds(previousIds);
   const next = uniqueIds(nextIds);
-  const toRemove = previous.filter((id) => !next.includes(id));
-  const toAdd = next.filter((id) => !previous.includes(id));
+  
+  // We only sync with the Volunteer collection's assignedEvents array
+  const volunteersPrevious = await Volunteer.find({ _id: { $in: previous } }).select('_id');
+  const volunteersNext = await Volunteer.find({ _id: { $in: next } }).select('_id');
+  
+  const vPrev = volunteersPrevious.map(v => v._id.toString());
+  const vNext = volunteersNext.map(v => v._id.toString());
+  
+  const toRemove = vPrev.filter((id) => !vNext.includes(id));
+  const toAdd = vNext.filter((id) => !vPrev.includes(id));
 
   await Promise.all([
     toRemove.length
@@ -72,20 +91,25 @@ const syncVolunteerAssignments = async (eventId, previousIds = [], nextIds = [])
 };
 
 export const createEvent = async (payload, userId) => {
-  const volunteerIds = await validateVolunteerIds(payload.volunteers);
+  const personnelIds = await validatePersonnelIds(payload.volunteers);
   const event = await Event.create({
     ...payload,
-    volunteers: volunteerIds,
+    volunteers: personnelIds,
     createdBy: userId,
   });
 
-  await syncVolunteerAssignments(event._id, [], volunteerIds);
+  await syncVolunteerAssignments(event._id, [], personnelIds);
 
-  const populatedEvent = await Event.findById(event._id).populate('volunteers', 'name email');
+  const populatedEvent = await Event.findById(event._id);
+  // Manual population for mixed collections
+  const [vols, users] = await Promise.all([
+    Volunteer.find({ _id: { $in: personnelIds } }).select('name email'),
+    User.find({ _id: { $in: personnelIds } }).select('name email'),
+  ]);
+  populatedEvent.volunteers = [...vols, ...users];
+
   const sanitizedEvent = sanitizeEvent(populatedEvent);
-
   logEventCreated(sanitizedEvent);
-
   return sanitizedEvent;
 };
 
@@ -105,9 +129,21 @@ export const getEvents = async ({ page = 1, limit = 10, search = '' }) => {
     : {};
 
   const [events, total] = await Promise.all([
-    Event.find(query).populate('volunteers', 'name email').sort({ date: -1 }).skip(skip).limit(safeLimit),
+    Event.find(query).sort({ date: -1 }).skip(skip).limit(safeLimit),
     Event.countDocuments(query),
   ]);
+
+  // Bulk populate volunteers for all events
+  const allPersonnelIds = uniqueIds(events.flatMap(e => e.volunteers));
+  const [vols, users] = await Promise.all([
+    Volunteer.find({ _id: { $in: allPersonnelIds } }).select('name email'),
+    User.find({ _id: { $in: allPersonnelIds } }).select('name email'),
+  ]);
+  const personnelMap = new Map([...vols, ...users].map(p => [p._id.toString(), p]));
+
+  events.forEach(e => {
+    e.volunteers = e.volunteers.map(id => personnelMap.get(id.toString()) || id);
+  });
 
   return {
     events: events.map(sanitizeEvent),
@@ -122,11 +158,18 @@ export const getEvents = async ({ page = 1, limit = 10, search = '' }) => {
 
 export const getEventById = async (id) => {
   ensureValidObjectId(id, 'event id');
-  const event = await Event.findById(id).populate('volunteers', 'name email');
+  const event = await Event.findById(id);
 
   if (!event) {
     throw new AppError('Event not found', 404);
   }
+
+  const personnelIds = uniqueIds(event.volunteers);
+  const [vols, users] = await Promise.all([
+    Volunteer.find({ _id: { $in: personnelIds } }).select('name email'),
+    User.find({ _id: { $in: personnelIds } }).select('name email'),
+  ]);
+  event.volunteers = [...vols, ...users];
 
   return sanitizeEvent(event);
 };
@@ -139,21 +182,26 @@ export const updateEvent = async (id, payload) => {
     throw new AppError('Event not found', 404);
   }
 
-  const previousVolunteerIds = event.volunteers.map((volunteerId) => volunteerId.toString());
-  const nextVolunteerIds = payload.volunteers
-    ? await validateVolunteerIds(payload.volunteers)
-    : previousVolunteerIds;
+  const previousPersonnelIds = event.volunteers.map((vId) => vId.toString());
+  const nextPersonnelIds = payload.volunteers
+    ? await validatePersonnelIds(payload.volunteers)
+    : previousPersonnelIds;
 
   Object.assign(event, {
     ...payload,
-    volunteers: nextVolunteerIds,
+    volunteers: nextPersonnelIds,
   });
 
   await event.save();
-  await syncVolunteerAssignments(event._id, previousVolunteerIds, nextVolunteerIds);
+  await syncVolunteerAssignments(event._id, previousPersonnelIds, nextPersonnelIds);
 
-  const populatedEvent = await Event.findById(event._id).populate('volunteers', 'name email');
-  return sanitizeEvent(populatedEvent);
+  const [vols, users] = await Promise.all([
+    Volunteer.find({ _id: { $in: nextPersonnelIds } }).select('name email'),
+    User.find({ _id: { $in: nextPersonnelIds } }).select('name email'),
+  ]);
+  event.volunteers = [...vols, ...users];
+
+  return sanitizeEvent(event);
 };
 
 export const deleteEvent = async (id) => {

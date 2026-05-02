@@ -29,6 +29,19 @@ const userSchema = new mongoose.Schema(
       enum: roles,
       default: 'volunteer',
     },
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
+    },
+    statusUpdateFlag: {
+      type: Boolean,
+      default: false,
+    },
+    statusMessage: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

@@ -12,7 +12,7 @@ const initialForm = {
   location: '',
   peopleServed: 0,
   mediaUrl: '',
-  volunteers: [],
+  personnel: [],
 };
 
 const toDateTimeLocal = (value) => {
@@ -25,7 +25,7 @@ const toDateTimeLocal = (value) => {
   return offsetDate.toISOString().slice(0, 16);
 };
 
-const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) => {
+const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, staff }) => {
   const [form, setForm] = useState(initialForm);
   const [isRecommending, setIsRecommending] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
@@ -40,7 +40,7 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
         location: event.location,
         peopleServed: event.peopleServed,
         mediaUrl: event.mediaUrl || '',
-        volunteers: event.volunteers.map((volunteer) => volunteer.id || volunteer),
+        personnel: event.volunteers.map((v) => v.id || v),
       });
       return;
     }
@@ -57,14 +57,14 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleVolunteerToggle = (volunteerId) => {
+  const handlePersonnelToggle = (personId) => {
     setForm((current) => {
-      const isSelected = current.volunteers.includes(volunteerId);
+      const isSelected = current.personnel.includes(personId);
       return {
         ...current,
-        volunteers: isSelected
-          ? current.volunteers.filter((id) => id !== volunteerId)
-          : [...current.volunteers, volunteerId],
+        personnel: isSelected
+          ? current.personnel.filter((id) => id !== personId)
+          : [...current.personnel, personId],
       };
     });
   };
@@ -73,6 +73,7 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
     submitEvent.preventDefault();
     onSubmit({
       ...form,
+      volunteers: form.personnel, // Maintain backend field name for compatibility
       date: new Date(form.date).toISOString(),
       peopleServed: Number(form.peopleServed || 0),
     });
@@ -176,7 +177,7 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
 
           <fieldset className="sm:col-span-2">
             <div className="flex items-center justify-between mb-2">
-              <legend className="text-sm font-medium text-slate-700">Assign volunteers</legend>
+              <legend className="text-sm font-medium text-slate-700">Assign Team Members</legend>
               <button
                 type="button"
                 onClick={handleRecommendVolunteers}
@@ -195,12 +196,12 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-indigo-800">AI Recommendations</p>
                 <ul className="space-y-2">
                   {recommendations.map((rec) => {
-                    const isSelected = form.volunteers.includes(rec.volunteerId);
+                    const isSelected = form.personnel.includes(rec.volunteerId);
                     return (
                       <li key={rec.volunteerId} className="flex items-start gap-2">
                         <button
                           type="button"
-                          onClick={() => handleVolunteerToggle(rec.volunteerId)}
+                          onClick={() => handlePersonnelToggle(rec.volunteerId)}
                           className={`mt-0.5 rounded-full ${isSelected ? 'text-indigo-600' : 'text-slate-300 hover:text-indigo-400'}`}
                         >
                           <CheckCircle2 size={16} />
@@ -217,23 +218,28 @@ const EventModal = ({ event, isOpen, isSaving, onClose, onSubmit, volunteers }) 
             )}
             
             <div className="grid max-h-52 gap-2 overflow-y-auto rounded-md border border-slate-200 bg-slate-50 p-3 sm:grid-cols-2">
-              {volunteers.length === 0 ? (
-                <p className="text-sm text-slate-500 sm:col-span-2">Add volunteers before assigning them to seva activities.</p>
+              {staff.length === 0 ? (
+                <p className="text-sm text-slate-500 sm:col-span-2">Register staff or volunteers before assigning them to seva activities.</p>
               ) : (
-                volunteers.map((volunteer) => (
+                staff.map((member) => (
                   <label
-                    key={volunteer.id}
-                    className="flex items-start gap-2 rounded-md bg-white px-3 py-2 text-sm text-slate-700"
+                    key={member.id}
+                    className="flex items-start gap-2 rounded-md bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition cursor-pointer border border-transparent hover:border-slate-200"
                   >
                     <input
                       type="checkbox"
-                      checked={form.volunteers.includes(volunteer.id)}
-                      onChange={() => handleVolunteerToggle(volunteer.id)}
+                      checked={form.personnel.includes(member.id)}
+                      onChange={() => handlePersonnelToggle(member.id)}
                       className="mt-1"
                     />
-                    <span>
-                      <span className="block font-medium text-viva-ink">{volunteer.name}</span>
-                      <span className="block text-xs text-slate-500">{volunteer.email}</span>
+                    <span className="flex-1">
+                      <span className="flex items-center justify-between">
+                        <span className="block font-medium text-viva-ink">{member.name}</span>
+                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${member.role === 'coordinator' ? 'bg-viva-leaf/10 text-viva-leaf' : 'bg-slate-100 text-slate-500'}`}>
+                          {member.role}
+                        </span>
+                      </span>
+                      <span className="block text-xs text-slate-500">{member.email}</span>
                     </span>
                   </label>
                 ))

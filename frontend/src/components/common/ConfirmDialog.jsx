@@ -1,6 +1,15 @@
 import { AlertTriangle } from 'lucide-react';
 
-const ConfirmDialog = ({ description, isOpen, isProcessing = false, onCancel, onConfirm, title }) => {
+const ConfirmDialog = ({ 
+  description, 
+  isOpen, 
+  isProcessing = false, 
+  onCancel, 
+  onConfirm, 
+  title,
+  confirmText = 'Delete',
+  confirmColor = 'bg-viva-maroon'
+}) => {
   if (!isOpen) {
     return null;
   }
@@ -29,11 +38,11 @@ const ConfirmDialog = ({ description, isOpen, isProcessing = false, onCancel, on
           </button>
           <button
             type="button"
-            className="h-10 rounded-md bg-viva-maroon px-4 text-sm font-semibold text-white hover:bg-viva-ink disabled:cursor-not-allowed disabled:opacity-70"
+            className={`h-10 rounded-md ${confirmColor} px-4 text-sm font-semibold text-white hover:bg-viva-ink disabled:cursor-not-allowed disabled:opacity-70`}
             onClick={onConfirm}
             disabled={isProcessing}
           >
-            {isProcessing ? 'Deleting...' : 'Delete'}
+            {isProcessing ? 'Processing...' : confirmText}
           </button>
         </div>
       </section>

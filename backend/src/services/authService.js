@@ -9,6 +9,9 @@ const sanitizeUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  status: user.status,
+  statusUpdateFlag: user.statusUpdateFlag,
+  statusMessage: user.statusMessage,
 });
 
 const signToken = (user) => {
@@ -22,7 +25,7 @@ const signToken = (user) => {
   );
 };
 
-export const registerUser = async ({ name, email, password, role }) => {
+export const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
@@ -34,7 +37,7 @@ export const registerUser = async ({ name, email, password, role }) => {
     name,
     email,
     password: hashedPassword,
-    role: role || 'volunteer',
+    role: 'volunteer', // Public registration is strictly for volunteers
   });
 
   return {
@@ -54,6 +57,10 @@ export const loginUser = async ({ email, password }) => {
 
   if (!isPasswordValid) {
     throw new AppError('Invalid email or password', 401);
+  }
+  
+  if (user.status === 'suspended') {
+    throw new AppError('Your account has been suspended. Please contact an administrator.', 403);
   }
 
   return {

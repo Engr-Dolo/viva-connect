@@ -28,7 +28,7 @@ const eventSchema = new mongoose.Schema(
     volunteers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Volunteer',
+        // Removed strict ref to 'Volunteer' to allow 'User' (Coordinator) assignment
       },
     ],
     peopleServed: {

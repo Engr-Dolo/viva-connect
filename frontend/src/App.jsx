@@ -5,6 +5,9 @@ import DashboardPage from './pages/DashboardPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import VolunteersPage from './pages/VolunteersPage.jsx';
 import ImpactPage from './pages/ImpactPage.jsx';
+import TeamPage from './pages/TeamPage.jsx';
+import StaffGate from './pages/StaffGate.jsx';
+import Sidebar from './components/navigation/Sidebar.jsx';
 import HomePage from './pages/HomePage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
@@ -41,6 +44,7 @@ const DashboardRoutes = () => {
         <Route path="/events" element={<EventsPage user={user} />} />
         <Route path="/volunteers" element={<VolunteersPage user={user} />} />
         <Route path="/impact" element={<ImpactPage />} />
+        {user?.role === 'admin' && <Route path="/team" element={<TeamPage />} />}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </DashboardLayout>
@@ -52,6 +56,8 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/auth/staff" element={<StaffGate />} />
       <Route 
         path="/dashboard/*" 
         element={

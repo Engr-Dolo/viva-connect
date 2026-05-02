@@ -5,8 +5,14 @@ import {
   getVolunteerById,
   getVolunteers,
   updateVolunteer,
+  getEligibleStaff,
 } from '../services/volunteerService.js';
 import { sendSuccess } from '../utils/apiResponse.js';
+
+export const getEligibleStaffHandler = asyncHandler(async (req, res) => {
+  const result = await getEligibleStaff();
+  return sendSuccess(res, result, 'Eligible staff retrieved successfully');
+});
 
 export const createVolunteerHandler = asyncHandler(async (req, res) => {
   const volunteer = await createVolunteer(req.body);

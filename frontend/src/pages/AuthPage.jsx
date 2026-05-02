@@ -161,20 +161,10 @@ const AuthPage = () => {
             </div>
 
             {isRegisterMode && (
-              <label className="block" htmlFor="role">
-                <span className="text-sm font-medium text-slate-700">Role</span>
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                  className="mt-2 block h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-viva-ink shadow-sm outline-none transition focus:border-viva-leaf focus:ring-2 focus:ring-viva-leaf/20"
-                >
-                  <option value="volunteer">Volunteer</option>
-                  <option value="coordinator">Coordinator</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </label>
+              <div className="rounded-md border border-viva-leaf/20 bg-viva-leaf/5 p-4 text-xs text-viva-ink leading-5">
+                <p className="font-bold text-viva-leaf uppercase tracking-wider mb-1">Volunteer Access</p>
+                By joining, you are registering as a VIVA Volunteer. Coordinators and Administrators must be verified and added by the system administrator.
+              </div>
             )}
 
             {error && (
@@ -195,6 +185,9 @@ const AuthPage = () => {
       </section>
 
       <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
+        <Link to="/auth/staff" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-viva-maroon transition-colors">
+          Secure Staff Portal
+        </Link>
         <div className="flex flex-col items-center gap-2">
           <p className="text-xs font-medium text-slate-500">
             &copy; {new Date().getFullYear()} <span className="text-viva-ink">Ramakrishna Mission VIVA Connect</span>. All rights reserved.
