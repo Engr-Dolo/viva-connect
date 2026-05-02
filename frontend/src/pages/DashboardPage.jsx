@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { CalendarDays, Clock3, HeartHandshake, UsersRound, Sparkles, ShieldAlert } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard.jsx';
 import { getDashboardStats } from '../services/dashboardService.js';
 import { getDashboardInsights } from '../services/aiService.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { adminResetPassword } from '../services/authService.js';
+import usePageTitle from '../hooks/usePageTitle.js';
 
 const initialStats = {
   totalVolunteers: 0,
@@ -23,7 +25,27 @@ const formatEventDate = (value) => {
   }).format(new Date(value));
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: 'easeOut' },
+  },
+};
+
 const DashboardPage = () => {
+  usePageTitle('Overview');
   const { user } = useAuth();
   const isAdmin = ['admin', 'coordinator'].includes(user?.role);
   
@@ -92,11 +114,16 @@ const DashboardPage = () => {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <section className="rounded-md border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="mx-auto max-w-7xl space-y-6"
+    >
+      <motion.section variants={itemVariants} className="rounded-md border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-viva-leaf">
+            <p className="text-xs font-semibold uppercase tracking-wide text-viva-leaf">
               Welcome
             </p>
             <h2 className="mt-1 text-2xl font-semibold text-viva-ink">Impact Overview</h2>
@@ -105,17 +132,17 @@ const DashboardPage = () => {
             A shared view of volunteers, seva activities, service hours, and community impact.
           </p>
         </div>
-      </section>
+      </motion.section>
 
       {error && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <motion.section variants={itemVariants} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((stat) => (
           <StatCard key={stat.label} {...stat} isLoading={isLoading} />
         ))}
-      </section>
+      </motion.section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+      <motion.section variants={itemVariants} className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
         <div className="rounded-md border border-slate-200 bg-white p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <div>
@@ -178,10 +205,10 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* AI Insights Section */}
-      <section className="rounded-md border border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 shadow-soft">
+      <motion.section variants={itemVariants} className="rounded-md border border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 shadow-soft">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -203,11 +230,11 @@ const DashboardPage = () => {
             {insights}
           </div>
         )}
-      </section>
+      </motion.section>
 
       {/* Admin Tools Section */}
       {isAdmin && (
-        <section className="rounded-md border border-slate-200 bg-white p-5 shadow-soft">
+        <motion.section variants={itemVariants} className="rounded-md border border-slate-200 bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 mb-4">
             <ShieldAlert className="text-viva-maroon" size={20} />
             <h3 className="text-base font-semibold text-viva-ink">Admin Tools</h3>
@@ -241,9 +268,9 @@ const DashboardPage = () => {
               </div>
             )}
           </div>
-        </section>
+        </motion.section>
       )}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,11 +1,12 @@
-import { CalendarDays, HeartHandshake, LayoutDashboard, UsersRound, X } from 'lucide-react';
+import { CalendarDays, HeartHandshake, LayoutDashboard, UsersRound, X, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const navItems = [
   { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Volunteers', path: '/dashboard/volunteers', icon: UsersRound },
   { label: 'Events', path: '/dashboard/events', icon: CalendarDays },
-  { label: 'Impact', path: '/dashboard/impact', icon: HeartHandshake, disabled: true },
+  { label: 'Impact', path: '/dashboard/impact', icon: HeartHandshake },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -34,9 +35,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             aria-label="Go to Overview"
             title="Overview"
           >
-            <span className="flex size-10 items-center justify-center rounded-md bg-viva-maroon text-sm font-bold text-white">
-              VC
-            </span>
+            <img src="/images/logo.png" alt="VIVA Connect Logo" className="h-10 w-10 object-contain rounded-md shadow-sm" />
             {isOpen && (
               <div className="leading-tight">
                 <p className="font-semibold text-viva-ink">VIVA Connect</p>
@@ -55,6 +54,17 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-5">
+          <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to="/"
+              className={`flex h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold mb-6 transition border border-viva-leaf/20 bg-viva-leaf/5 text-viva-leaf hover:bg-viva-leaf hover:text-white ${!isOpen ? 'lg:justify-center' : ''} w-full`}
+              title="Back to Homepage"
+            >
+              <Home size={20} />
+              {isOpen && <span>Back to Homepage</span>}
+            </Link>
+          </motion.div>
+
           {navItems.map((item) => {
             const Icon = item.icon;
 
@@ -68,20 +78,22 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {isOpen && <span>{item.label}</span>}
               </div>
             ) : (
-              <Link
-                key={item.label}
-                to={item.path}
-                onClick={onClose}
-                className={`flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
-                  location.pathname === item.path
-                    ? 'bg-viva-leaf text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-viva-ink'
-                } ${!isOpen ? 'lg:justify-center' : ''} w-full`}
-                title={item.label}
-              >
-                <Icon size={20} />
-                {isOpen && <span>{item.label}</span>}
-              </Link>
+              <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  onClick={onClose}
+                  className={`flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
+                    location.pathname === item.path
+                      ? 'bg-viva-leaf text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-viva-ink'
+                  } ${!isOpen ? 'lg:justify-center' : ''} w-full`}
+                  title={item.label}
+                >
+                  <Icon size={20} />
+                  {isOpen && <span>{item.label}</span>}
+                </Link>
+              </motion.div>
             );
           })}
         </nav>

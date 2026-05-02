@@ -7,6 +7,8 @@ import { useToast } from '../context/ToastContext.jsx';
 import { createEvent, deleteEvent, getEvents, updateEvent } from '../services/eventService.js';
 import { getVolunteers } from '../services/volunteerService.js';
 import { getEventReport } from '../services/aiService.js';
+import { exportToCSV } from '../utils/csvExport.js';
+import usePageTitle from '../hooks/usePageTitle.js';
 
 const canManageEvents = (role) => ['admin', 'coordinator'].includes(role);
 
@@ -18,6 +20,7 @@ const formatEventDate = (value) => {
 };
 
 const EventsPage = ({ user }) => {
+  usePageTitle('Events');
   const [events, setEvents] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
@@ -137,6 +140,20 @@ const EventsPage = ({ user }) => {
     }
   };
 
+  const handleExport = () => {
+    const columns = [
+      { key: 'title', label: 'Event Title' },
+      { key: 'date', label: 'Date' },
+      { key: 'location', label: 'Location' },
+      { key: 'description', label: 'Description' },
+      { key: 'peopleServed', label: 'People Served' },
+      { key: 'volunteers', label: 'Volunteers Assigned' },
+    ];
+    
+    exportToCSV(events, columns, `VIVA_Seva_Report_${new Date().toLocaleDateString()}.csv`);
+    showToast('Report generated successfully', 'success');
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <section className="rounded-md border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
@@ -148,16 +165,26 @@ const EventsPage = ({ user }) => {
               Plan seva activities, assign volunteers, and record people served.
             </p>
           </div>
-          {canManage && (
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-viva-leaf px-4 text-sm font-semibold text-white hover:bg-viva-ink"
-              onClick={openCreateModal}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              onClick={handleExport}
             >
-              <Plus size={18} />
-              Plan Activity
+              <FileText size={18} className="text-slate-500" />
+              Export Records
             </button>
-          )}
+            {canManage && (
+              <button
+                type="button"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-viva-leaf px-4 text-sm font-semibold text-white hover:bg-viva-ink"
+                onClick={openCreateModal}
+              >
+                <Plus size={18} />
+                Plan Activity
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -281,19 +308,44 @@ const EventsPage = ({ user }) => {
                 </div>
 
                 {reports[event.id] && (
-                  <div className="mt-4 relative rounded-md border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 shadow-sm">
-                    <button
-                      onClick={() => setReports(prev => ({ ...prev, [event.id]: null }))}
-                      className="absolute right-2 top-2 text-indigo-400 hover:text-indigo-600"
-                    >
-                      <X size={16} />
-                    </button>
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="text-indigo-600" size={16} />
-                      <span className="text-xs font-bold uppercase tracking-wide text-indigo-800">Generated Report</span>
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-6 overflow-hidden rounded-xl border border-indigo-100 bg-white shadow-lg"
+                  >
+                    <div className="flex items-center justify-between border-b border-indigo-50 bg-indigo-50/50 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="text-indigo-600" size={16} />
+                        <span className="text-xs font-bold uppercase tracking-widest text-indigo-900">AI Impact Summary</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(reports[event.id]);
+                            showToast('Report copied to clipboard', 'success');
+                          }}
+                          className="text-[10px] font-bold uppercase text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                          Copy Report
+                        </button>
+                        <button
+                          onClick={() => setReports(prev => ({ ...prev, [event.id]: null }))}
+                          className="text-indigo-400 hover:text-indigo-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-sm text-indigo-900 leading-relaxed whitespace-pre-wrap">{reports[event.id]}</p>
-                  </div>
+                    <div className="p-5">
+                      <p className="text-sm text-indigo-950 leading-relaxed font-serif whitespace-pre-wrap">
+                        {reports[event.id]}
+                      </p>
+                      <div className="mt-4 border-t border-indigo-50 pt-3 flex items-center justify-between">
+                        <p className="text-[10px] text-indigo-400 font-medium">Generated by VIVA Intelligence Assistant</p>
+                        <p className="text-[10px] text-indigo-400 font-medium">{new Date().toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
               </article>
             ))

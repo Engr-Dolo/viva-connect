@@ -4,7 +4,9 @@ import DashboardLayout from './layouts/DashboardLayout.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import VolunteersPage from './pages/VolunteersPage.jsx';
+import ImpactPage from './pages/ImpactPage.jsx';
 import HomePage from './pages/HomePage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
 
@@ -38,7 +40,8 @@ const DashboardRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/events" element={<EventsPage user={user} />} />
         <Route path="/volunteers" element={<VolunteersPage user={user} />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/impact" element={<ImpactPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </DashboardLayout>
   );
@@ -57,7 +60,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

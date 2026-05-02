@@ -10,10 +10,14 @@ import {
   getVolunteers,
   updateVolunteer,
 } from '../services/volunteerService.js';
+import { exportToCSV } from '../utils/csvExport.js';
+import { FileText } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle.js';
 
 const canManageVolunteers = (role) => ['admin', 'coordinator'].includes(role);
 
 const VolunteersPage = ({ user }) => {
+  usePageTitle('Volunteers');
   const [volunteers, setVolunteers] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [search, setSearch] = useState('');
@@ -107,6 +111,20 @@ const VolunteersPage = ({ user }) => {
     }
   };
 
+  const handleExport = () => {
+    const columns = [
+      { key: 'name', label: 'Full Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'availability', label: 'Availability' },
+      { key: 'totalSevaHours', label: 'Total Seva Hours' },
+    ];
+    
+    exportToCSV(volunteers, columns, `VIVA_Volunteer_List_${new Date().toLocaleDateString()}.csv`);
+    showToast('Volunteer list exported successfully', 'success');
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <section className="rounded-md border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
@@ -118,16 +136,26 @@ const VolunteersPage = ({ user }) => {
               Maintain volunteer profiles, skills, availability, and seva hour totals.
             </p>
           </div>
-          {canManage && (
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-viva-leaf px-4 text-sm font-semibold text-white hover:bg-viva-ink"
-              onClick={openCreateModal}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              onClick={handleExport}
             >
-              <Plus size={18} />
-              Add Volunteer
+              <FileText size={18} className="text-slate-500" />
+              Export List
             </button>
-          )}
+            {canManage && (
+              <button
+                type="button"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-viva-leaf px-4 text-sm font-semibold text-white hover:bg-viva-ink"
+                onClick={openCreateModal}
+              >
+                <Plus size={18} />
+                Add Volunteer
+              </button>
+            )}
+          </div>
         </div>
       </section>
 

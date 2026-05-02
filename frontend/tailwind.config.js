@@ -14,6 +14,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Outfit', 'Inter', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 16px 40px rgba(23, 32, 38, 0.08)',

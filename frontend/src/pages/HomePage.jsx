@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import { HeartHandshake, UsersRound, Sparkles, ArrowRight, MapPin, Phone } from 'lucide-react';
+import { motion } from 'framer-motion';
+import QuoteSection from '../components/common/QuoteSection.jsx';
+import EmergencyCall from '../components/common/EmergencyCall.jsx';
+import usePageTitle from '../hooks/usePageTitle.js';
 
 const HomePage = () => {
+  usePageTitle(); // Default base title
   return (
     <div className="min-h-screen bg-viva-mist flex flex-col font-sans">
       {/* Navbar */}
@@ -34,7 +39,12 @@ const HomePage = () => {
           
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
-              <div className="lg:col-span-6 text-center lg:text-left pt-10 lg:pt-0">
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="lg:col-span-6 text-center lg:text-left pt-10 lg:pt-0"
+              >
                 <h1 className="text-4xl font-bold tracking-tight text-viva-ink sm:text-6xl mb-6">
                   Empowering <span className="text-transparent bg-clip-text bg-gradient-to-r from-viva-maroon to-viva-saffron">Compassion</span> Through Technology
                 </h1>
@@ -52,9 +62,14 @@ const HomePage = () => {
                     Learn more <span aria-hidden="true">↓</span>
                   </a>
                 </div>
-              </div>
+              </motion.div>
               
-              <div className="lg:col-span-6 mt-16 lg:mt-0">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="lg:col-span-6 mt-16 lg:mt-0"
+              >
                 <div className="relative rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 backdrop-blur-sm lg:rounded-3xl shadow-2xl">
                   <img
                     src="/images/hero.png"
@@ -72,7 +87,7 @@ const HomePage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -87,7 +102,13 @@ const HomePage = () => {
               </p>
             </div>
             
-            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none"
+            >
               <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
                 <div className="flex flex-col group">
                   <dt className="flex items-center gap-x-3 text-lg font-semibold leading-7 text-viva-ink">
@@ -125,7 +146,7 @@ const HomePage = () => {
                   </dd>
                 </div>
               </dl>
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -167,6 +188,8 @@ const HomePage = () => {
           </div>
         </div>
       </main>
+
+      <QuoteSection />
 
       {/* Footer */}
       <footer className="bg-viva-ink py-12 sm:py-16 border-t border-slate-800">
@@ -215,16 +238,24 @@ const HomePage = () => {
             
           </div>
 
-          <div className="mt-16 pt-8 border-t border-white/10 flex flex-col items-center justify-center gap-2 text-center">
-            <p className="text-xs text-slate-500">
-              &copy; {new Date().getFullYear()} Ramakrishna Mission VIVA Connect. All rights reserved.
-            </p>
-            <p className="text-xs text-slate-600">
-              Engineered and maintained by <span className="font-medium text-slate-400">Engr. Philip J. Dolo</span>
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-sm font-medium text-slate-400">
+                &copy; {new Date().getFullYear()} <span className="text-white">Ramakrishna Mission VIVA Connect</span>. All rights reserved.
+              </p>
+              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-viva-saffron to-viva-leaf opacity-60"></div>
+            </div>
+            
+            <p className="text-xs tracking-wide text-slate-500 uppercase font-semibold">
+              Engineered & Maintained with <HeartHandshake className="inline-block mx-1 text-viva-maroon animate-pulse" size={14} /> by 
+              <span className="ml-1 text-transparent bg-clip-text bg-gradient-to-r from-viva-leaf to-emerald-400 font-bold">
+                Engr. Philip J. Dolo
+              </span>
             </p>
           </div>
         </div>
       </footer>
+      <EmergencyCall />
     </div>
   );
 };

@@ -4,6 +4,8 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import TextField from '../components/forms/TextField.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import EmergencyCall from '../components/common/EmergencyCall.jsx';
+import usePageTitle from '../hooks/usePageTitle.js';
 
 const initialForm = {
   name: '',
@@ -14,13 +16,14 @@ const initialForm = {
 
 const AuthPage = () => {
   const [mode, setMode] = useState('login');
+  const isRegisterMode = mode === 'register';
+  usePageTitle(isRegisterMode ? 'Join Us' : 'Sign In');
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const { login, register, isAuthenticated } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const isRegisterMode = mode === 'register';
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -190,6 +193,23 @@ const AuthPage = () => {
           </form>
         </div>
       </section>
+
+      <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-xs font-medium text-slate-500">
+            &copy; {new Date().getFullYear()} <span className="text-viva-ink">Ramakrishna Mission VIVA Connect</span>. All rights reserved.
+          </p>
+          <div className="h-1 w-8 rounded-full bg-gradient-to-r from-viva-saffron to-viva-leaf opacity-40"></div>
+        </div>
+        
+        <p className="text-[10px] tracking-wide text-slate-400 uppercase font-semibold">
+          Engineered by 
+          <span className="ml-1 text-viva-leaf font-bold">
+            Engr. Philip J. Dolo
+          </span>
+        </p>
+      </div>
+      <EmergencyCall />
     </main>
   );
 };

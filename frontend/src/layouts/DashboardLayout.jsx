@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserRound } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserRound, Home } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/navigation/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import QuoteSection from '../components/common/QuoteSection.jsx';
+import EmergencyCall from '../components/common/EmergencyCall.jsx';
 
 const viewTitles = {
   '/dashboard': 'Overview',
@@ -43,15 +46,25 @@ const DashboardLayout = ({ children }) => {
               >
                 {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
               </button>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-viva-leaf">
-                  Ramakrishna Mission
-                </p>
-                <h1 className="text-lg font-semibold text-viva-ink">{viewTitles[location.pathname] || 'VIVA Connect'}</h1>
+              <div className="flex items-center gap-3">
+                <img src="/images/logo.png" alt="VIVA Connect Logo" className="h-8 w-8 object-contain lg:hidden" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-viva-leaf">
+                    Ramakrishna Mission
+                  </p>
+                  <h1 className="text-lg font-semibold text-viva-ink">{viewTitles[location.pathname] || 'VIVA Connect'}</h1>
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="hidden items-center gap-2 rounded-md border border-viva-leaf/30 bg-white px-3 py-1.5 text-xs font-semibold text-viva-leaf shadow-sm transition hover:bg-viva-leaf hover:text-white sm:flex"
+              >
+                <Home size={14} />
+                Back to Homepage
+              </Link>
               <div className="hidden items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 sm:flex">
                 <span className="inline-flex size-8 items-center justify-center rounded-md bg-viva-leaf text-white">
                   <UserRound size={17} />
@@ -74,8 +87,22 @@ const DashboardLayout = ({ children }) => {
           </div>
         </header>
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="px-4 py-6 sm:px-6 lg:px-8"
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
+
+        <QuoteSection />
       </div>
+      <EmergencyCall />
     </div>
   );
 };

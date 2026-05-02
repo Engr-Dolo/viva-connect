@@ -42,6 +42,10 @@ app.use(
 );
 app.use(requestLogger);
 
+app.use('/api/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/api', routes);
 
 app.use(notFoundHandler);
